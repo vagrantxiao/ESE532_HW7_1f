@@ -130,22 +130,28 @@ int main()
 #ifdef __SDSCC__
   unsigned long long Start = sds_clock_counter();
 #endif
-
+  unsigned long long Duration;
   int Size = 0;
   int equal = 0;
   for (int Frame = 0; Frame < FRAMES; Frame++)
   {
     Scale_SW(Input_data + Frame * INPUT_FRAME_SIZE, Temp_data[0]);
     Filter_SW(Temp_data[0], Temp_data[1]);
+    Start = sds_clock_counter();
     Differentiate_SW(Temp_data[1], Temp_data[2]);
+    Duration = sds_clock_counter() - Start;
+    printf("Software duration: %llu cycles.\n", Duration);
+    Start = sds_clock_counter();
     Differentiate_HW(Temp_data[1], Temp_data[3]);
+    Duration = sds_clock_counter() - Start;
+    printf("Hardware duration: %llu cycles.\n", Duration);
     if(Compare_ARRAYS(Temp_data[2], Temp_data[3])) equal = 1;
     Size = Compress_SW(Temp_data[2], Output_data);
   }
 
 
 #ifdef __SDSCC__
-  unsigned long long Duration = sds_clock_counter() - Start;
+  Duration = sds_clock_counter() - Start;
   printf("Software duration: %llu cycles.\n", Duration);
 #endif
 
