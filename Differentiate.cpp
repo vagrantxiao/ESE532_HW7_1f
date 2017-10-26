@@ -23,25 +23,30 @@ void Differentiate_SW(const unsigned char * Input, unsigned char * Output)
 #pragma SDS data access_pattern(Input:SEQUENTIAL, Output:SEQUENTIAL)
 void Differentiate_HW(const unsigned char Input[FRAMES * INPUT_FRAME_SIZE], unsigned char Output[FRAMES * INPUT_FRAME_SIZE])
 {
-  unsigned char Input_ym[OUTPUT_FRAME_WIDTH];
   unsigned char Input_y[OUTPUT_FRAME_WIDTH];
+  unsigned Input_ymx, Input_yxm, Input_new;
+
 
   for (int Y = 0; Y < OUTPUT_FRAME_HEIGHT; Y++)
   {
     for (int X = 0; X < OUTPUT_FRAME_WIDTH; X++)
     {
-      Input_y[X] =  Input[OUTPUT_FRAME_WIDTH * Y + X];
+#pragma HLS PIPELINE
+      Input_ymx = Input_y[X];
+      Input_yxm = Input_new;
+      Input_new = Input[OUTPUT_FRAME_WIDTH * Y + X];
       int Average = 0;
       if (Y > 0 && X > 0)
-        Average = (Input_ym[X] + Input_y[X-1]) / 2;
+        Average = (Input_ymx + Input_yxm) / 2;
       else if (Y > 0)
-        Average = Input_ym[X];
+        Average = Input_ymx;
       else if (X > 0)
-        Average = Input_y[X-1];
+        Average = Input_yxm;
 
-      unsigned char Diff = Input_y[X] - Average;
+      unsigned char Diff = Input_new - Average;
       Output[Y * OUTPUT_FRAME_WIDTH + X] = Diff;
-      Input_ym[X] = Input_y[X];
+
+      Input_y[X] = Input_new;
     }
   }
 }
