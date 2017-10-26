@@ -132,15 +132,17 @@ int main()
 #endif
 
   int Size = 0;
+  int equal = 0;
   for (int Frame = 0; Frame < FRAMES; Frame++)
   {
     Scale_SW(Input_data + Frame * INPUT_FRAME_SIZE, Temp_data[0]);
     Filter_SW(Temp_data[0], Temp_data[1]);
     Differentiate_SW(Temp_data[1], Temp_data[2]);
     Differentiate_HW(Temp_data[1], Temp_data[3]);
+    if(Compare_ARRAYS(Temp_data[2], Temp_data[3])) equal = 1;
     Size = Compress_SW(Temp_data[2], Output_data);
   }
-  //printf("Temp_data[3][109] = %d\n", Temp_data[3][109]);
+
 
 #ifdef __SDSCC__
   unsigned long long Duration = sds_clock_counter() - Start;
@@ -149,12 +151,11 @@ int main()
 
   Store_data("Output.bin", Output_data, Size);
 
-  int equal = Compare_ARRAYS(Temp_data[2], Temp_data[3]);
+
   Free(Input_data);
   Free(Output_data);
   for (int i = 0; i < STAGES; i++)
 	Free(Temp_data[i]);
-
   puts("Application completed successfully.");
   return equal;
 }
